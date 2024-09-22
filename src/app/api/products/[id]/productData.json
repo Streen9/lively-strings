@@ -1,0 +1,172 @@
+[
+    {
+        "id": 101,
+        "name": "T-Shirt",
+        "price": 19.99,
+        "rating": 4.5,
+        "ratingCount": 120,
+        "description": "A comfortable and stylish T-shirt made from high-quality cotton. Perfect for everyday wear.",
+        "features": [
+            "100% cotton",
+            "Comfortable fit",
+            "Available in multiple colors",
+            "Machine washable",
+            "Durable construction"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Clothes"
+    },
+    {
+        "id": 102,
+        "name": "Jeans",
+        "price": 49.99,
+        "rating": 4.2,
+        "ratingCount": 85,
+        "description": "Classic jeans with a modern fit. Made from high-quality denim for comfort and durability.",
+        "features": [
+            "99% cotton, 1% elastane",
+            "Regular fit",
+            "Five-pocket styling",
+            "Machine washable",
+            "Available in multiple washes"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Clothes"
+    },
+    {
+        "id": 103,
+        "name": "Dress",
+        "price": 79.99,
+        "rating": 4.8,
+        "ratingCount": 200,
+        "description": "An elegant dress suitable for various occasions. Made from a comfortable, flowing fabric.",
+        "features": [
+            "Light and breathable fabric",
+            "Flattering cut",
+            "Available in multiple designs",
+            "Machine washable",
+            "Perfect for casual and semi-formal events"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Clothes"
+    },
+    {
+        "id": 201,
+        "name": "Garden Swing",
+        "price": 199.99,
+        "rating": 4.7,
+        "ratingCount": 50,
+        "description": "A durable and comfortable garden swing perfect for relaxing outdoors.",
+        "features": [
+            "Weather-resistant construction",
+            "Comfortable seating for two",
+            "Easy to assemble",
+            "Sturdy frame",
+            "Adjustable canopy"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Swings"
+    },
+    {
+        "id": 202,
+        "name": "Porch Swing",
+        "price": 249.99,
+        "rating": 4.6,
+        "ratingCount": 35,
+        "description": "A classic porch swing with a modern touch, perfect for your outdoor living space.",
+        "features": [
+            "Durable hardwood construction",
+            "Comfortable cushioned seating",
+            "Easy to hang",
+            "Weather-resistant finish",
+            "Holds up to 500 lbs"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Swings"
+    },
+    {
+        "id": 301,
+        "name": "Embroidery Kit",
+        "price": 29.99,
+        "rating": 4.3,
+        "ratingCount": 75,
+        "description": "A complete embroidery kit for beginners and experienced crafters alike.",
+        "features": [
+            "Includes embroidery hoop, needles, and thread",
+            "Multiple pattern options",
+            "Suitable for beginners",
+            "High-quality materials",
+            "Instruction booklet included"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Thread Arts"
+    },
+    {
+        "id": 302,
+        "name": "Cross Stitch Set",
+        "price": 24.99,
+        "rating": 4.4,
+        "ratingCount": 60,
+        "description": "A comprehensive cross stitch set with everything you need to create beautiful designs.",
+        "features": [
+            "Includes fabric, threads, needles, and pattern",
+            "Multiple design options",
+            "Easy-to-follow instructions",
+            "Suitable for all skill levels",
+            "High-quality materials"
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Thread Arts"
+    },
+    {
+        "id": 303,
+        "name": "Needlepoint Kit",
+        "price": 34.99,
+        "rating": 4.1,
+        "ratingCount": 40,
+        "description": "A complete needlepoint kit for creating beautiful tapestries and decorative pieces.",
+        "features": [
+            "Includes canvas, yarn, needles, and instructions",
+            "Variety of designs to choose from",
+            "Suitable for beginners and experienced crafters",
+            "High-quality materials",
+            "Finished size: 12\" x 12\""
+        ],
+        "images": [
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300",
+            "https://via.placeholder.com/400x300"
+        ],
+        "category": "Thread Arts"
+    }
+]
