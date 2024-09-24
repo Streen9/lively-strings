@@ -2,8 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Star, ShoppingCart, Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { Star, ShoppingCart, Heart, ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import useCartStore from "@/stores/cartStore";
+import { useToast } from "@/hooks/use-toast";
 
 interface Product {
   id: number;
@@ -22,8 +28,11 @@ export default function ProductDetail({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { addToCart } = useCartStore();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -59,6 +68,34 @@ export default function ProductDetail({ id }: { id: string }) {
     }
   };
 
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    setIsAddingToCart(true);
+    try {
+      await addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.images[0],
+      });
+      toast({
+        title: "Success",
+        description: "Item added to cart successfully",
+      });
+    } catch (err) {
+      console.error("Error adding item to cart:", err);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   if (loading) {
     return <div className="container mx-auto px-4 py-8">Loading...</div>;
   }
@@ -73,89 +110,132 @@ export default function ProductDetail({ id }: { id: string }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <button
+      <Button
+        variant="ghost"
+        className="mb-6 flex items-center"
         onClick={() => router.back()}
-        className="mb-4 text-blue-500 hover:underline"
       >
-        &larr; Back to products
-      </button>
-      <div className="grid md:grid-cols-2 gap-8">
-        <div>
-          <div
-            ref={imageRef}
-            className="relative w-full h-96 overflow-hidden rounded-lg mb-4 cursor-zoom-in"
-            onMouseMove={handleMouseMove}
-          >
-            <Image
-              src={product.images[currentImage]}
-              alt={product.name}
-              layout="fill"
-              objectFit="cover"
-              className="transition-transform duration-200 ease-in-out transform hover:scale-150"
-              style={{
-                transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-              }}
-            />
-          </div>
-          <div className="flex space-x-2 overflow-x-auto">
-            {product.images.map((image: string, index: number) => (
-              <div
-                key={index}
-                className={`w-20 h-20 rounded-md overflow-hidden cursor-pointer ${
-                  index === currentImage ? "ring-2 ring-blue-500" : ""
-                }`}
-                onClick={() => handleImageChange(index)}
-              >
-                <Image
-                  src={image}
-                  alt={`${product.name} - Image ${index + 1}`}
-                  width={80}
-                  height={80}
-                  objectFit="cover"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-          <div className="flex items-center mb-4">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-5 h-5 ${
-                    i < Math.floor(product.rating)
-                      ? "text-yellow-400 fill-current"
-                      : "text-gray-300"
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back to products
+      </Button>
+      <div className="grid lg:grid-cols-2 gap-12">
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <motion.div
+              ref={imageRef}
+              className="relative w-full h-[500px] overflow-hidden cursor-zoom-in"
+              onMouseMove={handleMouseMove}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Image
+                src={product.images[currentImage]}
+                alt={product.name}
+                layout="fill"
+                objectFit="cover"
+                className="transition-transform duration-200 ease-in-out transform hover:scale-150"
+                style={{
+                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                }}
+              />
+            </motion.div>
+            <div className="flex space-x-2 p-4 overflow-x-auto">
+              {product.images.map((image, index) => (
+                <motion.div
+                  key={index}
+                  className={`relative w-20 h-20 rounded-md overflow-hidden cursor-pointer ${
+                    index === currentImage ? "ring-2 ring-blue-500" : ""
                   }`}
-                />
+                  onClick={() => handleImageChange(index)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Image
+                    src={image}
+                    alt={`${product.name} - Image ${index + 1}`}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                </motion.div>
               ))}
             </div>
-            <span className="ml-2 text-sm text-gray-600">
-              ({product.ratingCount} ratings)
-            </span>
-          </div>
-          <p className="text-2xl font-bold mb-4">${product.price.toFixed(2)}</p>
-          <p className="text-gray-700 mb-6">{product.description}</p>
-          <ul className="list-disc list-inside mb-6">
+          </CardContent>
+        </Card>
+
+        <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-5 h-5 ${
+                      i < Math.floor(product.rating)
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-600">
+                ({product.ratingCount} ratings)
+              </span>
+            </div>
+            <Badge variant="secondary" className="text-lg font-semibold mb-4">
+              ${product.price.toFixed(2)}
+            </Badge>
+          </motion.div>
+
+          <motion.p
+            className="text-gray-700"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {product.description}
+          </motion.p>
+
+          <motion.ul
+            className="list-disc list-inside space-y-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             {product.features.map((feature, index) => (
               <li key={index} className="text-gray-700">
                 {feature}
               </li>
             ))}
-          </ul>
-          <div className="flex space-x-4 mb-6">
-            <button className="bg-blue-500 text-white px-6 py-2 rounded-md flex items-center justify-center hover:bg-blue-600 transition-colors">
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              Add to Cart
-            </button>
-            <button className="border border-gray-300 px-6 py-2 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors">
+          </motion.ul>
+
+          <motion.div
+            className="flex space-x-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Button
+              className="flex-1"
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+            >
+              {isAddingToCart ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <ShoppingCart className="w-5 h-5 mr-2" />
+              )}
+              {isAddingToCart ? "Adding..." : "Add to Cart"}
+            </Button>
+            <Button variant="outline" className="flex-1">
               <Heart className="w-5 h-5 mr-2" />
               Add to Wishlist
-            </button>
-          </div>
+            </Button>
+          </motion.div>
         </div>
       </div>
     </div>

@@ -2,17 +2,27 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Star,
   ChevronLeft,
   ChevronRight,
   ShoppingCart,
   Play,
+  Loader2,
 } from "lucide-react";
-import { CartItem, Product } from "@/app/interfaces";
+import { Product } from "@/app/interfaces";
 import appwriteService from "@/appwrite/config";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import LoginPopup from "@/components/popup/LoginPopup";
+import useCartStore from "@/stores/cartStore";
 
 export default function Starter() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,10 +31,27 @@ export default function Starter() {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const categoryRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
-  const [userData, setUserData] = useState<{ id: string } | null>(null);
+  const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
+  const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+
+  const {
+    items: cartItems,
+    fetchCart,
+    addToCart,
+    isLoading: isCartLoading,
+    error: cartError,
+  } = useCartStore();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");
+    if (redirect) {
+      fetchCart();
+      router.replace(redirect);
+    }
+  }, [router, fetchCart]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -48,98 +75,36 @@ export default function Starter() {
 
     fetchProducts();
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
-  const fetchCart = async () => {
+  const handleAddToCart = async (product: Product) => {
+    setLoadingItems((prev) => ({ ...prev, [product.id]: true }));
     try {
       const userData = await appwriteService.getCurrentUser();
       if (!userData) {
-        return [];
+        setIsLoginPopupOpen(true);
+        return;
       }
-      const response = await fetch("/api/cart", {
-        headers: {
-          "user-id": userData?.$id || "",
-        },
+      await addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.images[0],
       });
-      if (!response.ok) {
-        throw new Error("Failed to fetch cart");
-      }
-      const data: CartItem[] = await response.json();
-      setCart(data);
-    } catch (err) {
-      console.error("Error fetching cart:", err);
-    }
-  };
-
-  const addToCart = async (product: Product) => {
-    try {
-      const userData = await appwriteService.getCurrentUser();
-      if (!userData) {
-        return "";
-      }
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: userData.$id || "",
-          productId: product.id,
-          quantity: 1,
-        }),
+      toast({
+        title: "Success",
+        description: "Item added to cart successfully",
       });
-      if (!response.ok) {
-        throw new Error("Failed to add item to cart");
-      }
-      fetchCart();
     } catch (err) {
       console.error("Error adding item to cart:", err);
-    }
-  };
-
-  const updateCartItemQuantity = async (
-    productId: number,
-    quantity: number
-  ) => {
-    try {
-      const response = await fetch("/api/cart", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "123", // Replace with actual user ID
-          productId,
-          quantity,
-        }),
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
       });
-      if (!response.ok) {
-        throw new Error("Failed to update cart item quantity");
-      }
-      fetchCart();
-    } catch (err) {
-      console.error("Error updating cart item quantity:", err);
-    }
-  };
-
-  const removeFromCart = async (productId: number) => {
-    try {
-      const response = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "123", // Replace with actual user ID
-          productId,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to remove item from cart");
-      }
-      fetchCart();
-    } catch (err) {
-      console.error("Error removing item from cart:", err);
+    } finally {
+      setLoadingItems((prev) => ({ ...prev, [product.id]: false }));
     }
   };
 
@@ -189,15 +154,14 @@ export default function Starter() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Featured Products Slider */}
-      <div className="relative mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Featured Products</h2>
-        <div className="relative h-96 overflow-hidden rounded-lg">
+    <div className="container mx-auto px-4 py-2 space-y-12">
+      <section className="relative">
+        <h2 className="text-3xl font-bold mb-6">Featured Products</h2>
+        <div className="relative h-[70vh] overflow-hidden rounded-xl">
           {featuredProducts.map((product, index) => (
             <div
               key={product.id}
-              className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ${
+              className={`absolute inset-0 transition-opacity duration-1000 ${
                 index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
             >
@@ -206,119 +170,126 @@ export default function Starter() {
                 alt={product.name}
                 layout="fill"
                 objectFit="cover"
+                className="brightness-75"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
-                <h3 className="text-xl font-semibold">{product.name}</h3>
-                <p className="text-lg">${product.price.toFixed(2)}</p>
+              <div className="absolute inset-0 flex flex-col justify-end p-8 bg-gradient-to-t from-black/70 to-transparent">
+                <h3 className="text-4xl font-bold text-white mb-2">
+                  {product.name}
+                </h3>
+                <p className="text-2xl text-white mb-4">
+                  ${product.price.toFixed(2)}
+                </p>
+                <Button size="lg" className="w-fit">
+                  Shop Now
+                </Button>
               </div>
             </div>
           ))}
         </div>
-        <button
-          className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md"
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full"
           onClick={prevSlide}
         >
-          <ChevronLeft className="w-6 h-6 text-black" />
-        </button>
-        <button
-          className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md"
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full"
           onClick={nextSlide}
         >
-          <ChevronRight className="w-6 h-6 text-black" />
-        </button>
-      </div>
+          <ChevronRight className="h-6 w-6" />
+        </Button>
+      </section>
 
       {/* Product Categories */}
       {categories.map((category, categoryIndex) => (
-        <div key={category} className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">{category}</h2>
-            <button className="text-blue-500 hover:text-blue-700">
-              View all
-            </button>
+        <section key={category} className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold">{category}</h2>
+            <Button variant="link">View all</Button>
           </div>
           <div className="relative">
-            <button
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md z-10 hover:bg-gray-300"
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 rounded-full"
               onClick={() => scrollCategory(categoryIndex, "left")}
             >
-              <ChevronLeft className="w-6 h-6 text-black" />
-            </button>
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
             <div
               ref={(el) => (categoryRefs.current[categoryIndex] = el)}
-              className="flex overflow-x-auto scrollbar-hide space-x-6 scroll-smooth"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              className="flex overflow-x-auto scrollbar-hide space-x-6 pb-4"
             >
-              <style jsx>{`
-                div::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
               {products
                 .filter((product) => product.category === category)
                 .map((product) => (
-                  <Link href={`/productDetail/${product.id}`} key={product.id}>
-                    <div className="flex-none w-64 bg-white rounded-lg shadow-md overflow-hidden cursor-pointer">
-                      <div className="relative h-64">
+                  <Card key={product.id} className="flex-none w-72">
+                    <Link href={`/productDetail/${product.id}`}>
+                      <div className="relative h-72">
                         <Image
                           src={product.images[0]}
                           alt={product.name}
                           layout="fill"
                           objectFit="cover"
+                          className="rounded-t-lg"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="bg-white rounded-full px-2 py-1 text-sm font-semibold text-gray-800">
-                              ${product.price.toFixed(2)}
-                            </div>
-                            <div className="flex items-center bg-white rounded-full px-2 py-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="ml-1 text-sm font-semibold text-gray-800">
-                                {product.rating.toFixed(1)}
-                              </span>
-                            </div>
-                          </div>
-                          <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center justify-center">
-                            <ShoppingCart className="w-5 h-5 mr-2" />
-                            Add to Cart
-                          </button>
-                        </div>
+                        <Badge className="absolute top-2 right-2">
+                          ${product.price.toFixed(2)}
+                        </Badge>
                       </div>
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold mb-2 text-black">
-                          {product.name}
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < Math.floor(product.rating)
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-black"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm text-gray-600">
-                            ({product.ratingCount} ratings)
-                          </span>
-                        </div>
+                    </Link>
+                    <CardContent className="p-4 space-y-2">
+                      <h3 className="font-semibold truncate">{product.name}</h3>
+                      <div className="flex items-center space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(product.rating)
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                        <span className="text-sm text-gray-600">
+                          ({product.ratingCount})
+                        </span>
                       </div>
-                    </div>
-                  </Link>
+                      <Button
+                        className="w-full"
+                        onClick={() => handleAddToCart(product)}
+                        disabled={loadingItems[product.id]}
+                      >
+                        {loadingItems[product.id] ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                        )}
+                        {loadingItems[product.id] ? "Adding..." : "Add to Cart"}
+                      </Button>
+                    </CardContent>
+                  </Card>
                 ))}
             </div>
-            <button
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md z-10 hover:bg-gray-300"
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 rounded-full"
               onClick={() => scrollCategory(categoryIndex, "right")}
             >
-              <ChevronRight className="w-6 h-6 text-black" />
-            </button>
+              <ChevronRight className="h-6 w-6" />
+            </Button>
           </div>
-        </div>
+        </section>
       ))}
+      <LoginPopup
+        isOpen={isLoginPopupOpen}
+        onClose={() => setIsLoginPopupOpen(false)}
+      />
     </div>
   );
 }

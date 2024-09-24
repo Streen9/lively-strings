@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import useAuth from "@/context/useAuth";
 import appwriteService from "@/appwrite/config";
@@ -20,6 +20,7 @@ interface FormData {
 
 const Login: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setAuthStatus } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -38,7 +39,8 @@ const Login: React.FC = () => {
       const session = await appwriteService.login(formData);
       if (session) {
         setAuthStatus(true);
-        router.push("/profile");
+        const redirect = searchParams.get("redirect") || "/";
+        router.push(redirect);
       }
     } catch (error: any) {
       setError(error.message);
