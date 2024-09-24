@@ -94,12 +94,15 @@ export class AppwriteService {
 
   async getCurrentUser() {
     try {
-      return account.get();
-    } catch (error) {
-      console.log("getcurrentUser error: " + error);
+      return await account.get();
+    } catch (error: any) {
+      if (error.code === 401) {
+        // User is not authenticated
+        return null;
+      }
+      console.error("getCurrentUser error:", error);
+      throw error; // Rethrow other errors
     }
-
-    return null;
   }
 
   async updateDetails({

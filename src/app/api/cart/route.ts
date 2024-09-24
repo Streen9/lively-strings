@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     const query = `
       MATCH (u:User {id: $userId})-[:HAS_CART]->(c:Cart)-[r:CONTAINS]->(p:Product)
-      RETURN p.id AS productId, p.name AS name, p.price AS price, r.quantity AS quantity
+      RETURN p.id AS productId, p.name AS name, p.price AS price, p.images as images, r.quantity AS quantity
     `;
 
     const result = await runQuery(query, { userId });
