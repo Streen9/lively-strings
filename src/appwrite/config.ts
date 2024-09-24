@@ -1,5 +1,5 @@
 import config from "@/config/config";
-import { Client, Account, ID } from "appwrite";
+import { Client, Account, ID, Storage } from "appwrite";
 
 type CreateUserAccount = {
   email: string;
@@ -20,6 +20,8 @@ type UpdateUserDetails = {
 };
 
 const appwriteClient = new Client();
+
+const storage = new Storage(appwriteClient);
 
 appwriteClient
   .setEndpoint(config.appwriteUrl)
@@ -87,6 +89,15 @@ export class AppwriteService {
     try {
       const data = await this.getCurrentUser();
       return Boolean(data);
+    } catch (error) {}
+
+    return false;
+  }
+
+  async isAdmin(): Promise<boolean> {
+    try {
+      const data = await this.getCurrentUser();
+      return Boolean(data?.labels && data.labels.includes("admin"));
     } catch (error) {}
 
     return false;
@@ -176,6 +187,36 @@ export class AppwriteService {
       return await account.deleteSession("current");
     } catch (error) {
       console.log("logout error: " + error);
+    }
+  }
+
+  async getFileFromBucket({ key }: { key: string }) {
+    try {
+      return await storage.getFileDownload(config.appwriteBucketId, key);
+    } catch (error) {
+      console.error("Error fetching file");
+    }
+  }
+  getFileUrl(fileId: string): string {
+    return storage.getFileView(config.appwriteBucketId, fileId).href;
+  }
+
+  async uploadFileToBucket({ file, fileId }: { file: File; fileId?: string }) {
+    try {
+      if (!fileId) {
+        throw Error("fileId is required");
+      }
+
+      const result = await storage.createFile(
+        config.appwriteBucketId,
+        fileId,
+        file
+      );
+
+      return result;
+    } catch (error) {
+      console.error("Error uploading file to bucket:", error);
+      throw error;
     }
   }
 }

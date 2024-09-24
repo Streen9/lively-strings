@@ -1,4 +1,12 @@
 {
     "projectId": "1519",
-    "projectName": "lively-strings"
+    "projectName": "lively-strings",
+    "buckets": [
+        {
+            "$id": "66f29a03001d4946fc5a",
+            "name": "lively-strings",
+            "fileSecurity": true,
+            "enabled": true
+        }
+    ]
 }
