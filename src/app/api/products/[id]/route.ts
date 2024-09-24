@@ -6,9 +6,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = parseInt(params.id);
+  const id = params.id;
 
-  if (isNaN(id)) {
+  if (!id) {
     return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
   }
 

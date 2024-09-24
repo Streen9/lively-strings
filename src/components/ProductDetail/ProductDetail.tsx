@@ -132,7 +132,7 @@ export default function ProductDetail({ id }: { id: string }) {
                 src={product.images[currentImage]}
                 alt={product.name}
                 layout="fill"
-                objectFit="cover"
+                // objectFit="cover"
                 className="transition-transform duration-200 ease-in-out transform hover:scale-150"
                 style={{
                   transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
