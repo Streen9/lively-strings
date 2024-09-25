@@ -154,10 +154,12 @@ export default function Starter() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-2 space-y-12">
+    <div className="container mx-auto px-4 py-8 space-y-16 bg-gradient-to-b from-neutral-50 to-neutral-100">
       <section className="relative">
-        <h2 className="text-3xl font-bold mb-6">Featured Products</h2>
-        <div className="relative h-[70vh] overflow-hidden rounded-xl">
+        <h2 className="text-4xl font-bold mb-8 text-neutral-800 tracking-tight">
+          Featured Products
+        </h2>
+        <div className="relative h-[80vh] overflow-hidden rounded-2xl shadow-2xl">
           {featuredProducts.map((product, index) => (
             <div
               key={product.id}
@@ -170,16 +172,19 @@ export default function Starter() {
                 alt={product.name}
                 layout="fill"
                 objectFit="cover"
-                className="brightness-75"
+                className="brightness-90 hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 flex flex-col justify-end p-8 bg-gradient-to-t from-black/70 to-transparent">
-                <h3 className="text-4xl font-bold text-white mb-2">
+              <div className="absolute inset-0 flex flex-col justify-end p-12 bg-gradient-to-t from-black/80 to-transparent">
+                <h3 className="text-5xl font-bold text-white mb-4 leading-tight">
                   {product.name}
                 </h3>
-                <p className="text-2xl text-white mb-4">
+                <p className="text-3xl text-white mb-6">
                   ${product.price.toFixed(2)}
                 </p>
-                <Button size="lg" className="w-fit">
+                <Button
+                  size="lg"
+                  className="w-fit text-lg px-8 py-6 bg-white text-black hover:bg-black hover:text-white transition-colors duration-300"
+                >
                   Shop Now
                 </Button>
               </div>
@@ -189,7 +194,7 @@ export default function Starter() {
         <Button
           variant="outline"
           size="icon"
-          className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full"
+          className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/80 hover:bg-white transition-colors duration-300"
           onClick={prevSlide}
         >
           <ChevronLeft className="h-6 w-6" />
@@ -197,7 +202,7 @@ export default function Starter() {
         <Button
           variant="outline"
           size="icon"
-          className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full"
+          className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/80 hover:bg-white transition-colors duration-300"
           onClick={nextSlide}
         >
           <ChevronRight className="h-6 w-6" />
@@ -206,68 +211,78 @@ export default function Starter() {
 
       {/* Product Categories */}
       {categories.map((category, categoryIndex) => (
-        <section key={category} className="space-y-6">
+        <section key={category} className="space-y-8">
           <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold">{category}</h2>
-            <Button variant="link">View all</Button>
+            <h2 className="text-3xl font-bold text-neutral-800">{category}</h2>
+            <Button
+              variant="link"
+              className="text-lg text-neutral-600 hover:text-neutral-900 transition-colors duration-300"
+            >
+              View all
+            </Button>
           </div>
           <div className="relative">
             <Button
               variant="outline"
               size="icon"
-              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 rounded-full"
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/80 hover:bg-white transition-colors duration-300"
               onClick={() => scrollCategory(categoryIndex, "left")}
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
             <div
               ref={(el) => (categoryRefs.current[categoryIndex] = el)}
-              className="flex overflow-x-auto scrollbar-hide space-x-6 pb-4"
+              className="flex overflow-x-auto scrollbar-hide space-x-8 pb-6"
             >
               {products
                 .filter((product) => product.category === category)
                 .map((product) => (
-                  <Card key={product.id} className="flex-none w-72">
+                  <Card
+                    key={product.id}
+                    className="flex-none w-80 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                  >
                     <Link href={`/productDetail/${product.id}`}>
-                      <div className="relative h-72">
+                      <div className="relative h-80">
                         <Image
                           src={product.images[0]}
                           alt={product.name}
                           layout="fill"
                           objectFit="cover"
-                          className="rounded-t-lg"
+                          className="rounded-t-lg hover:scale-105 transition-transform duration-500"
                         />
-                        <Badge className="absolute top-2 right-2">
+                        <Badge className="absolute top-3 right-3 text-lg px-3 py-1 bg-white/80 text-black">
                           ${product.price.toFixed(2)}
                         </Badge>
                       </div>
                     </Link>
-                    <CardContent className="p-4 space-y-2">
-                      <h3 className="font-semibold truncate">{product.name}</h3>
+                    <CardContent className="p-6 space-y-4">
+                      <h3 className="font-semibold text-xl truncate">
+                        {product.name}
+                      </h3>
                       <div className="flex items-center space-x-1">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-4 h-4 ${
+                            className={`w-5 h-5 ${
                               i < Math.floor(product.rating)
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300"
                             }`}
                           />
                         ))}
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 ml-2">
                           ({product.ratingCount})
                         </span>
                       </div>
                       <Button
-                        className="w-full"
+                        className="w-full text-lg py-6 bg-neutral-800 hover:bg-neutral-900 text-white transition-colors duration-300"
                         onClick={() => handleAddToCart(product)}
                         disabled={loadingItems[product.id]}
                       >
                         {loadingItems[product.id] ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         ) : (
-                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          <ShoppingCart className="w-5 h-5 mr-2" />
                         )}
                         {loadingItems[product.id] ? "Adding..." : "Add to Cart"}
                       </Button>
@@ -278,7 +293,7 @@ export default function Starter() {
             <Button
               variant="outline"
               size="icon"
-              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 rounded-full"
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/80 hover:bg-white transition-colors duration-300"
               onClick={() => scrollCategory(categoryIndex, "right")}
             >
               <ChevronRight className="h-6 w-6" />
