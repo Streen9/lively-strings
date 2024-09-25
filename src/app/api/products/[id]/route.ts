@@ -68,3 +68,63 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  const updatedProduct = await request.json();
+
+  const query = `
+    MATCH (p:Product {id: $id})
+    SET p += $properties
+    RETURN p
+  `;
+
+  const updatedParams = {
+    id: id,
+    properties: updatedProduct,
+  };
+
+  try {
+    const result = await runQuery(query, updatedParams);
+    console.log(request);
+    if (result.length === 0) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+    return NextResponse.json({
+      message: "Product updated successfully",
+      product: result,
+    });
+  } catch (error) {
+    console.error("Error updating product in Neo4j:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+
+  const query = `
+    MATCH (p:Product {id: $id})
+    DETACH DELETE p
+  `;
+
+  try {
+    await runQuery(query, { id });
+    return NextResponse.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product from Neo4j:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
