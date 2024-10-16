@@ -1,18 +1,13 @@
 # A detailed course to undestand nextjs
 
-This long video was designed to give you an indepth understanding about latest nextjs and how it works. If you have improved the project add your repo link in the assignment section. Please do not change main code files as students need to learn from the same code.
+This long video was designed to give you an indepth understanding about latest nextjs and how it works.
 
 ## Tech Stack
 - Nextjs
 - typescript
-- mongodb
-- mailtrap
+- neo4j
+- appwrite
 
-![Course Image](./6.png)
-
----
-Available on my youtube channel
-[Youtube channel link](https://www.youtube.com/@HiteshChoudharydotcom)
 
 ## Getting Started
 
@@ -25,14 +20,3 @@ yarn dev
 # or
 pnpm dev
 ```
-## Assignment
-1. Improve the UI of the application
-2. Add a new feature to the application
----
-## your completed assignments
-
-- Add your repo link here
-- 
-
-
----
